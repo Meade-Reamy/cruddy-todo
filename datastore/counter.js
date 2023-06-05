@@ -15,34 +15,60 @@ const zeroPaddedNumber = (num) => {
   return sprintf('%05d', num);
 };
 
+// reads the file 'counterFile' and calls a function on the file data if successful
 const readCounter = (callback) => {
   fs.readFile(exports.counterFile, (err, fileData) => {
     if (err) {
-      callback(null, 0);
+      callback(null, 0); // counter is initialized as 0
     } else {
-      callback(null, Number(fileData));
+      callback(null, Number(fileData)); // counter is present and we need to present it as a number
     }
   });
 };
 
+// adds a new number to the counterfile calls a callback if successful
 const writeCounter = (count, callback) => {
-  var counterString = zeroPaddedNumber(count);
-  fs.writeFile(exports.counterFile, counterString, (err) => {
+  var counterString = zeroPaddedNumber(count); // looks at current count and makes it a padded number
+  fs.writeFile(exports.counterFile, counterString, (err) => { // adds current count to file
     if (err) {
       throw ('error writing counter');
     } else {
-      callback(null, counterString);
+      callback(null, counterString); //update the counter with
     }
   });
 };
 
 // Public API - Fix this function //////////////////////////////////////////////
 
-exports.getNextUniqueId = () => {
-  counter = counter + 1;
-  return zeroPaddedNumber(counter);
+//  argument - (err, id) => {
+//       expect(err).to.be.null;
+//       expect(id).to.exist;
+//       done();
+//     })
+
+exports.getNextUniqueId = function(callback) {
+  readCounter((err, count) => {
+    if (err) {
+      throw ('error reading counter');
+    }
+    let newCounter = count + 1;
+    counter = newCounter;
+
+    writeCounter(newCounter, (err, counterString) => {
+      if (err) {
+        throw ('error setting id');
+      }
+      let id = counterString;
+      callback(err, id);
+    });
+  });
 };
 
+
+// readcounter
+  // takes the second passed in param
+  // call write with the second param + 1
+  // set counter = seond param + 1
 
 
 // Configuration -- DO NOT MODIFY //////////////////////////////////////////////
