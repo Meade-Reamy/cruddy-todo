@@ -8,17 +8,53 @@ var items = {};
 // Public API - Fix these CRUD functions ///////////////////////////////////////
 
 exports.create = (text, callback) => {
-  var id = counter.getNextUniqueId();
-  items[id] = text;
-  callback(null, { id, text });
+  counter.getNextUniqueId((err, id) => {
+    if (err) {
+      throw ('error in create');
+    }
+    fs.writeFile(exports.dataDir + `/${id}.txt`, text, (err) => {
+      if (err) {
+        throw ('err creating file');
+      }
+      callback(err, { id, text });
+    });
+  });
+  // items[id] = text;
+  // callback(null, { id, text });
 };
 
 exports.readAll = (callback) => {
-  var data = _.map(items, (text, id) => {
-    return { id, text };
+  counter.readCounter((err, count) => {
+    if (err) {
+      throw ('error reading files');
+    }
+    let data = [];
+    for (let idx = 1; idx <= count; idx++) {
+      fs.exists(exports.dataDir + `/${counter.zeroPaddedNumber(idx)}.txt`, (e) => {
+        if (e) {
+          data.push(exports.dataDir + `/${counter.zeroPaddedNumber(idx)}.txt`);
+          console.log(data);
+        }
+      });
+      console.log(data);
+    }
+    console.log(data);
+    callback(err, data);
   });
-  callback(null, data);
+
+  // var data = _.map(items, (text, id) => {
+  //   return { id, text };
+  // });
+  // callback(null, data);
 };
+
+/*
+call readCounter
+  callback to check if each file up to count exists
+  if it does push to arr
+  callback which takes an arr
+*/
+
 
 exports.readOne = (id, callback) => {
   var text = items[id];
@@ -52,7 +88,7 @@ exports.delete = (id, callback) => {
 
 // Config+Initialization code -- DO NOT MODIFY /////////////////////////////////
 
-exports.dataDir = path.join(__dirname, 'data');
+exports.dataDir = path.join(__dirname, 'data'); // dataDirectory/data/09322.txt
 
 exports.initialize = () => {
   if (!fs.existsSync(exports.dataDir)) {
