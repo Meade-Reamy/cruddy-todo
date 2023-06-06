@@ -24,40 +24,83 @@ exports.create = (text, callback) => {
 };
 
 exports.readAll = (callback) => {
-  counter.readCounter((err, count) => {
-    if (err) {
-      throw ('error reading files');
+  let test = new Promise((resolve, reject) => {
+    fs.readdir(exports.dataDir, (err, dirData) => {
+      if (err) {
+        reject(err);
+      } else {
+        console.log('dataDir inside', dirData);
+        resolve(dirData);
+      }
+    });
+  }).then((dirData) => {
+    let result = [];
+    for (let i = 0; i < dirData.length; i++) {
+      result.push(new Promise((resolve, reject) => {
+        fs.readFile(`${exports.dataDir}/${dirData[i]}`, (err, data) => {
+          if (err) {
+            reject(err);
+          }
+          let id = dirData[i].split('.')[0];
+          let text = data.toString();
+          resolve({ id: id, text: text });
+        });
+      }));
     }
-    let data = [];
-    if (count === 0) { // if there are no todos to read
-      callback(err, data);
-    }
-    for (let idx = 1; idx <= count; idx++) { // if there is data to read
-      fs.exists(exports.dataDir + `/${counter.zeroPaddedNumber(idx)}.txt`, (e) => {
-        if (e) {
-          let id = counter.zeroPaddedNumber(idx);
-          data.push({ id: id, text: id });
-        }
-        if (data.length === count) {
-          callback(err, data);
-        }
-      });
-    }
+    console.log('result', result);
+    Promise.all(result).then((values) => callback(null, values));
+  });
+};
+    // counter.readCounter((err, count) => {
+    //   if (err) {
+    //     throw ('error reading files');
+    //   }
+    //   let data = [];
+    //   if (count === 0) { // if there are no todos to read
+    //     callback(err, data);
+    //   }
+    //   // data promise
+    //   for (let idx = 1; idx <= count; idx++) { // if there is data to read
+    //     fs.exists(exports.dataDir, (e) => {
+    //       if (e) {
+
+    //         let id = counter.zeroPaddedNumber(idx);
+    //         data.push({ id: id, text: id });
+    //       }
+    //       if (data.length === count) {
+    //         console.log('data inside', data);
+    //         callback(err, data);
+    //         //resolve
+    //       }
+    //     });
+    //   }
+    //   console.log('data', data);
     // console.log('data outside', data);
     // callback(err, data);
-  });
+
 
   // var data = _.map(items, (text, id) => {
   //   return { id, text };
   // });
   // callback(null, data);
-};
+
+// promise all
+ // exists
+ // read
+ // data
+
+// for loop
+  // push new promise to array
+// promise.all on array
 
 /*
-call readCounter
-  callback to check if each file up to count exists
-  if it does push to arr
-  callback which takes an arr
+  for loop
+    // make a new promise
+      // if doesnt exist, rejected(err)
+      // if exists, push object to the array
+
+  promises.all --- waiting for all the files to be read
+  .then, callback on the data
 */
 
 

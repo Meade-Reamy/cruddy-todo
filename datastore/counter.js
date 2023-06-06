@@ -74,3 +74,5 @@ exports.getNextUniqueId = function(callback) {
 // Configuration -- DO NOT MODIFY //////////////////////////////////////////////
 
 exports.counterFile = path.join(__dirname, 'counter.txt');
+exports.readCounter = readCounter;
+exports.zeroPaddedNumber = zeroPaddedNumber;
