@@ -61,35 +61,77 @@ call readCounter
 */
 
 
-exports.readOne = (id, callback) => {
-  var text = items[id];
-  if (!text) {
-    callback(new Error(`No item with id: ${id}`));
+exports.readOne = (id, callback, err = null) => {
+  if (err) {
+    throw (err);
   } else {
-    callback(null, { id, text });
+    console.log(id);
+    fs.readFile(exports.dataDir + `/${counter.zeroPaddedNumber(Number(id))}.txt`, (err, data) => {
+      if (err) {
+        //throw (err);
+        callback(err, null);
+      } else {
+        callback(err, { id: counter.zeroPaddedNumber(id), text: data.toString() });
+      }
+    });
   }
 };
 
-exports.update = (id, text, callback) => {
-  var item = items[id];
-  if (!item) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    items[id] = text;
-    callback(null, { id, text });
+// todos.readOne('notAnId', (err, todo) => {
+//   expect(err).to.exist;
+//   done();
+// });
+
+
+exports.update = (id, text, callback, err = null) => {
+  if (err) {
+    throw ('error updating');
   }
+  fs.exists(exports.dataDir + `/${counter.zeroPaddedNumber(id)}.txt`, (e) => {
+    if (!e || err) {
+      err = true;
+      callback(err, null);
+    } else {
+      fs.writeFile(exports.dataDir + `/${counter.zeroPaddedNumber(id)}.txt`, text, (err) => {
+        if (err) {
+          callback(err, null);
+        }
+        callback(err, {id: id, text: text});
+      });
+    }
+
+  });
 };
 
-exports.delete = (id, callback) => {
-  var item = items[id];
-  delete items[id];
-  if (!item) {
-    // report an error if item not found
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback();
+/*
+if (err) {
+      throw ('error in create');
+    }
+    fs.writeFile(exports.dataDir + `/${id}.txt`, text, (err) => {
+      if (err) {
+        throw ('err creating file');
+      }
+      callback(err, { id, text });
+    });
+*/
+
+exports.delete = (id, callback, err = null) => {
+  if (err) {
+    throw ('error deleting');
   }
+  fs.unlink(exports.dataDir + `/${counter.zeroPaddedNumber(id)}.txt`, (err) => {
+    if (err) {
+      callback(err);
+    } else {
+      callback(err, id);
+    }
+  });
 };
+
+// if err
+  // throw err
+// if exists
+  // fs.unlink(path, (err) => throw err})
 
 // Config+Initialization code -- DO NOT MODIFY /////////////////////////////////
 
